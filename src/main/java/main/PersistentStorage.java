@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.Properties;
 
 import models.Book;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PersistentStorage {
     private Connection conn;
+    private Logger log = LoggerFactory.getLogger(Server.class);
 
     public PersistentStorage() throws SQLException {
         Properties property = new Properties();
@@ -23,7 +26,8 @@ public class PersistentStorage {
             String url = String.format("jdbc:%s?user=%s&password=%s", host, login, password);
             conn = DriverManager.getConnection(url);
         } catch (IOException e) {
-
+            log.error("Failed to read connection properties from config.properties");
+            throw new SQLException(e);
         }
     }
 
