@@ -87,10 +87,20 @@ public class Server {
                 }
             } else if (routeWords.length == 2 && routeWords[1].equals("books")) {
                 try {
-                    List<Integer> ids = ps.getBooksIds();
+                    List<Book> books = ps.getBooks();
+                    StringBuilder sb = new StringBuilder();
+                    for (Book book : books) {
+                        sb.append(String.format("{\"title\": \"%s\", \"id\": %d},", book.getTitle(), book.getId()));
+                    }
+                    if (!sb.isEmpty()) {
+                        sb.deleteCharAt(sb.length() - 1);
+                        sb.insert(0, "[");
+                        sb.append("]");
+                    }
+
                     writer.write(String.format(
-                            "HTTP/1.1 200 OK\ncontent-type: application/json\r\n\r\n{\"ids\":%s}\n",
-                            Arrays.toString(ids.toArray())
+                            "HTTP/1.1 200 OK\ncontent-type: application/json\r\n\r\n%s\n",
+                            sb.toString()
                     ));
                 } catch (SQLException e) {
                     log.warn("Failed to prepare answer to client because of sql exception");

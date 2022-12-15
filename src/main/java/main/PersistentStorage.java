@@ -1,15 +1,15 @@
 package main;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
 import models.Book;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
 
 public class PersistentStorage {
     private Connection conn;
@@ -40,7 +40,7 @@ public class PersistentStorage {
      */
     public Book getBook(int id) throws SQLException {
         PreparedStatement st = conn.prepareStatement("select title, author, published from book where id = ?");
-        st.setInt(1, id);   
+        st.setInt(1, id);
         ResultSet rs = st.executeQuery();
         if (!rs.isBeforeFirst())
             throw new IllegalArgumentException(String.format("No such book with id %d", id));
@@ -48,13 +48,13 @@ public class PersistentStorage {
 
         String title = rs.getString("title");
         String author = rs.getString("author");
-        int published = rs.getInt("published"); 
+        int published = rs.getInt("published");
 
         return new Book(title, author, published, id);
     }
 
     /**
-     * Gets list of all book ids present in the database
+     * Gets list of all book ids present in the database.
      *
      * @return list of present ids
      */
@@ -62,12 +62,35 @@ public class PersistentStorage {
         Statement st = conn.createStatement();
         ResultSet rs = st.executeQuery("select id from book");
 
-        List<Integer> list = new ArrayList<>();
+        List<Integer> list = new LinkedList<>();
         while (rs.next()) {
             list.add(rs.getInt("id"));
         }
         rs.close();
         st.close();
+        return list;
+    }
+
+    /**
+     * Gets all books that are present in a database.
+     *
+     * @return list of all books
+     */
+    public List<Book> getBooks() throws SQLException {
+        Statement st = conn.createStatement();
+        ResultSet rs = st.executeQuery("select * from book");
+
+        List<Book> list = new LinkedList<>();
+        while (rs.next()) {
+            String title = rs.getString("title");
+            String author = rs.getString("author");
+            int published = rs.getInt("published");
+            int id = rs.getInt("id");
+
+            Book book = new Book(title, author, published, id);
+            list.add(book);
+        }
+
         return list;
     }
 }
